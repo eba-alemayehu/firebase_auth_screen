@@ -10,6 +10,7 @@ environment:
 dependencies:
   bloc: ^8.0.3
   crypto: ^3.0.1
+  equatable: ^2.0.3
   firebase: ^9.0.2
   firebase_auth: ^3.3.10
   firebase_core: ^1.13.1
