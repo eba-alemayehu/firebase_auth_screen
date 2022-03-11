@@ -1,0 +1,14 @@
+# This is a generated file; do not edit or check into version control.
+firebase_auth=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-3.3.10/
+firebase_auth_web=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth_web-3.3.9/
+firebase_core=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.13.1/
+firebase_core_web=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_web-1.6.1/
+flutter_facebook_auth=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_facebook_auth-4.1.1/
+flutter_facebook_auth_web=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_facebook_auth_web-3.0.0+1/
+google_sign_in=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in-5.2.4/
+google_sign_in_web=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in_web-0.10.0+5/
+libphonenumber=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/libphonenumber-2.0.2/
+libphonenumber_plugin=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/libphonenumber_plugin-0.2.3/
+libphonenumber_web=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/libphonenumber_web-0.2.0+1/
+sign_in_with_apple=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/sign_in_with_apple-3.3.0/
+sign_in_with_apple_web=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/sign_in_with_apple_web-1.0.1/
