@@ -9,7 +9,7 @@ class AuthInitial extends AuthState {
   List<Object> get props => [];
 }
 
-class SendingPhoneConfirmation extends AuthState {
+class SendingPhoneConfirmation extends SigningIn {
   @override
   List<Object?> get props => [];
 }
@@ -20,78 +20,126 @@ class ConfirmationCodeSent extends AuthState {
 }
 
 class CodeAutoRetrievalTimeout extends AuthState {
+  final String verificationId;
+
+  CodeAutoRetrievalTimeout({required this.verificationId});
+
   @override
   List<Object?> get props => [];
 }
 
-class VerificationFailed extends AuthState {
+class VerificationFailed extends SignInFailed {
+  final error;
+
+  VerificationFailed({required this.error}) : super(error);
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [error];
 }
 
 class SignedIn extends AuthState {
-  final UserCredential userCredential;
+  final User? user;
 
-  SignedIn(this.userCredential);
+  SignedIn(this.user);
 
   @override
-  List<Object?> get props => [userCredential];
+  List<Object?> get props => [user];
 }
 
-class SignedInWithPhone extends SignedIn{
-  SignedInWithPhone({required UserCredential userCredential}): super(userCredential);
+class SignInFailed extends AuthState {
+  final error;
+
+  const SignInFailed(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}
+
+class SigningIn extends AuthState {
+  @override
+  List<Object?> get props => [];
+}
+
+class SigningInWithPhone extends SigningIn {
+  @override
+  List<Object?> get props => [];
+}
+
+class SignedInWithPhone extends SignedIn {
+  SignedInWithPhone({required User? user}) : super(user);
 
   @override
   List<Object?> get props => [];
 }
 
-class SigningInWithGoogle extends AuthState {
+class SignedInWithPhoneFailed extends SignInFailed {
+  final error;
+
+  SignedInWithPhoneFailed({required this.error}) : super(error);
+
+  @override
+  List<Object?> get props => [error];
+}
+
+class SigningInWithGoogle extends SigningIn {
   @override
   List<Object?> get props => [];
 }
 
 class SignedInWithGoogle extends SignedIn {
-  SignedInWithGoogle({required UserCredential userCredential}): super(userCredential);
+  SignedInWithGoogle({required User? user}) : super(user);
 
   @override
   List<Object?> get props => [];
 }
 
-class SignedInWithGoogleFailed extends AuthState {
+class SignedInWithGoogleFailed extends SignInFailed {
+  final error;
+
+  SignedInWithGoogleFailed({required this.error}) : super(error);
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [error];
 }
 
-class SigningInWithFacebook extends AuthState {
+class SigningInWithFacebook extends SigningIn {
   @override
   List<Object?> get props => [];
 }
 
 class SignedInWithFacebook extends SignedIn {
-  SignedInWithFacebook({required UserCredential userCredential}): super(userCredential);
+  SignedInWithFacebook({required User? user}) : super(user);
 
   @override
   List<Object?> get props => [];
 }
 
-class SignedInWithFacebookFailed extends AuthState {
+class SignedInWithFacebookFailed extends SignInFailed {
+  final error;
+
+  SignedInWithFacebookFailed({required this.error}) : super(error);
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [error];
 }
 
-class SigningInWithApple extends AuthState {
+class SigningInWithApple extends SigningIn {
   @override
   List<Object?> get props => [];
 }
 
 class SignedInWithApple extends SignedIn {
-  SignedInWithApple({required UserCredential userCredential}): super(userCredential);
+  SignedInWithApple({required User? user}) : super(user);
 
   @override
   List<Object?> get props => [];
 }
 
-class SignedInWithAppleFailed extends AuthState {
+class SignedInWithAppleFailed extends SignInFailed {
+  final error;
+
+  SignedInWithAppleFailed({required this.error}) : super(error);
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [error];
 }

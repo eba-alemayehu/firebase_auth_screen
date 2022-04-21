@@ -1,9 +1,9 @@
 # This is a generated file; do not edit or check into version control.
-firebase_auth=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-3.3.10/
-firebase_auth_web=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth_web-3.3.9/
-firebase_core=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.13.1/
+firebase_auth=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-3.3.12/
+firebase_auth_web=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth_web-3.3.10/
+firebase_core=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.14.0/
 firebase_core_web=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_web-1.6.1/
-flutter_facebook_auth=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_facebook_auth-4.1.1/
+flutter_facebook_auth=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_facebook_auth-4.1.2/
 flutter_facebook_auth_web=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_facebook_auth_web-3.0.0+1/
 google_sign_in=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in-5.2.4/
 google_sign_in_web=/home/eba/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in_web-0.10.0+5/

@@ -26,12 +26,12 @@ class AuthCubit extends Cubit<AuthState> {
       phoneNumber: phoneNumber,
       forceResendingToken: resendToken,
       verificationCompleted: (PhoneAuthCredential credential) async {
-        UserCredential userCredintal = await FirebaseAuth.instance
-            .signInWithCredential(credential);
-        emit(SignedInWithPhone(userCredential: userCredintal));
+        UserCredential userCredintal =
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        emit(SignedInWithPhone(user: userCredintal.user));
       },
       verificationFailed: (FirebaseAuthException e) {
-        emit(VerificationFailed());
+        emit(VerificationFailed(error: e));
       },
       codeSent: (String verificationId, int? resendToken) {
         emit(ConfirmationCodeSent());
@@ -39,44 +39,74 @@ class AuthCubit extends Cubit<AuthState> {
       },
       timeout: const Duration(minutes: 2),
       codeAutoRetrievalTimeout: (String verificationId) {
-        emit(CodeAutoRetrievalTimeout());
+        emit(CodeAutoRetrievalTimeout(verificationId: verificationId));
       },
     );
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user?.uid != null) {
+        emit(SignedIn(user));
+      }
+    });
   }
 
   Future<void> signInWithGoogle() async {
     emit(SigningInWithGoogle());
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    try{
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-    // Obtain the auth details from the request
-    final GoogleSignInAuthentication? googleAuth =
-    await googleUser?.authentication;
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication? googleAuth =
+      await googleUser?.authentication;
 
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
 
-    // Once signed in, return the UserCredential
-    UserCredential userCredential =
-    await FirebaseAuth.instance.signInWithCredential(credential);
-    emit(SignedInWithGoogle(userCredential: userCredential));
+      // Once signed in, return the UserCredential
+      UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      emit(SignedInWithGoogle(user: userCredential.user));
+    }catch(e){
+      emit(SignedInWithGoogleFailed(error: e));
+    }
+
   }
 
   Future<void> signInWithFacebook() async {
     emit(SigningInWithFacebook());
     // Trigger the sign-in flow
-    final LoginResult loginResult = await FacebookAuth.instance.login();
+    try{
+      final LoginResult loginResult =
+      await FacebookAuth.instance.login(permissions: ['public_profile']);
 
-    // Create a credential from the access token
-    final OAuthCredential facebookAuthCredential =
-    FacebookAuthProvider.credential(loginResult.accessToken?.token ?? '');
+      // Create a credential from the access token
+      final OAuthCredential facebookAuthCredential =
+      FacebookAuthProvider.credential(loginResult.accessToken?.token ?? '');
 
-    // Once signed in, return the UserCredential
-    UserCredential userCredential = await FirebaseAuth.instance
-        .signInWithCredential(facebookAuthCredential);
-    emit(SignedInWithFacebook(userCredential: userCredential));
+      // Once signed in, return the UserCredential
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(facebookAuthCredential);
+      emit(SignedInWithFacebook(user: userCredential.user));
+    }catch (e) {
+      emit(SignedInWithFacebookFailed(error: e));
+    }
+  }
+
+  Future<void> signInPhoneNumber(String verificationId,
+      String verificationCode) async {
+    emit(SigningInWithPhone());
+    PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: verificationCode);
+    try {
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+          credential);
+      emit(SignedInWithPhone(user: userCredential.user));
+    } catch (e) {
+      emit(SignedInWithPhoneFailed(error: e));
+    }
   }
 
   /// Generates a cryptographically secure random nonce, to be included in a
@@ -98,24 +128,29 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> signInWithApple() async {
     emit(SigningInWithApple());
-    final rawNonce = generateNonce();
-    final nonce = sha256ofString(rawNonce);
+    try {
+      final rawNonce = generateNonce();
+      final nonce = sha256ofString(rawNonce);
 
-    final appleCredential = await SignInWithApple.getAppleIDCredential(
-      scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ],
-      nonce: nonce,
-    );
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: nonce,
+      );
 
-    final oauthCredential = OAuthProvider("apple.com").credential(
-      idToken: appleCredential.identityToken,
-      rawNonce: rawNonce,
-    );
+      final oauthCredential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        rawNonce: rawNonce,
+      );
 
-    UserCredential userCredential =
-    await FirebaseAuth.instance.signInWithCredential(oauthCredential);
-    emit(SignedInWithApple(userCredential: userCredential));
+      UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+      emit(SignedInWithApple(user: userCredential.user));
+    } catch(e) {
+      emit(SignedInWithAppleFailed(error: e));
+    }
+
   }
 }
