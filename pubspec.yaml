@@ -23,6 +23,7 @@ dependencies:
   flutter_otp_text_field: ^1.0.0
   flutter_signin_button: ^2.0.0
   flutter_svg: ^1.0.3
+  fluttertoast: ^8.0.9
   form_builder_chips_input: ^0.0.3
   google_sign_in: ^5.2.4
   intl_phone_number_input: ^0.7.0+2
