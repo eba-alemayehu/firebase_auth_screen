@@ -299,7 +299,7 @@ class PhoneInput extends StatelessWidget {
                 ],
               ),
               child: InternationalPhoneNumberInput(
-                countries: ["ET"],
+                countries: ["ET", "US"],
                 onInputChanged: (PhoneNumber value) {
                   phoneNumber = value;
                 },
