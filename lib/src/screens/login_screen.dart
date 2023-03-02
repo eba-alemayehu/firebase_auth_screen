@@ -112,7 +112,7 @@ class _BodyState extends State<Body> {
             message: state.error?.toString() ?? 'Unknown error occurred.',
           ),
         );
-      } else if (state is SigningIn){
+      } else if (state is SigningIn) {
         EasyLoading.show();
       } else {
         EasyLoading.dismiss();
@@ -134,9 +134,10 @@ class _BodyState extends State<Body> {
           VERTICAL_MARGIN_5,
           PhoneInput(),
           VERTICAL_MARGIN_7,
-          const Center(
-            child: Text("Sign in with"),
-          ),
+          if (widget.apple || widget.google || widget.facebook)
+            const Center(
+              child: Text("Sign in with"),
+            ),
           if (widget.alignment == ButtonsAlignment.HORIZONTAL)
             Column(
               children: [
