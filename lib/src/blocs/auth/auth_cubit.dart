@@ -12,9 +12,9 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 part 'auth_state.dart';
 
 typedef PhoneCodeSent = void Function(
-    String verificationId,
-    int? forceResendingToken,
-    );
+  String verificationId,
+  int? forceResendingToken,
+);
 
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
@@ -27,7 +27,7 @@ class AuthCubit extends Cubit<AuthState> {
       forceResendingToken: resendToken,
       verificationCompleted: (PhoneAuthCredential credential) async {
         UserCredential userCredintal =
-        await FirebaseAuth.instance.signInWithCredential(credential);
+            await FirebaseAuth.instance.signInWithCredential(credential);
         emit(SignedInWithPhone(user: userCredintal.user));
       },
       verificationFailed: (FirebaseAuthException e) {
@@ -51,12 +51,12 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> signInWithGoogle() async {
     emit(SigningInWithGoogle());
-    try{
+    try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
       // Obtain the auth details from the request
       final GoogleSignInAuthentication? googleAuth =
-      await googleUser?.authentication;
+          await googleUser?.authentication;
 
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
@@ -66,43 +66,41 @@ class AuthCubit extends Cubit<AuthState> {
 
       // Once signed in, return the UserCredential
       UserCredential userCredential =
-      await FirebaseAuth.instance.signInWithCredential(credential);
+          await FirebaseAuth.instance.signInWithCredential(credential);
       emit(SignedInWithGoogle(user: userCredential.user));
-    }catch(e){
+    } catch (e) {
       emit(SignedInWithGoogleFailed(error: e));
     }
-
   }
 
   Future<void> signInWithFacebook() async {
     emit(SigningInWithFacebook());
     // Trigger the sign-in flow
-    try{
+    try {
       final LoginResult loginResult =
-      await FacebookAuth.instance.login(permissions: ['public_profile']);
+          await FacebookAuth.instance.login(permissions: ['public_profile']);
 
       // Create a credential from the access token
       final OAuthCredential facebookAuthCredential =
-      FacebookAuthProvider.credential(loginResult.accessToken?.token ?? '');
+          FacebookAuthProvider.credential(loginResult.accessToken?.token ?? '');
 
       // Once signed in, return the UserCredential
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithCredential(facebookAuthCredential);
       emit(SignedInWithFacebook(user: userCredential.user));
-    }catch (e) {
+    } catch (e) {
       emit(SignedInWithFacebookFailed(error: e));
     }
   }
 
-  Future<void> signInPhoneNumber(String verificationId,
-      String verificationCode) async {
+  Future<void> signInPhoneNumber(
+      String verificationId, String verificationCode) async {
     emit(SigningInWithPhone());
     PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: verificationCode);
+        verificationId: verificationId, smsCode: verificationCode);
     try {
-      final userCredential = await FirebaseAuth.instance.signInWithCredential(
-          credential);
+      final userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
       emit(SignedInWithPhone(user: userCredential.user));
     } catch (e) {
       emit(SignedInWithPhoneFailed(error: e));
@@ -146,11 +144,16 @@ class AuthCubit extends Cubit<AuthState> {
       );
 
       UserCredential userCredential =
-      await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+          await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+      final user = userCredential.user;
+      if (user != null) {
+        String name = appleCredential.givenName ?? "";
+        await user.updateDisplayName(name);
+      }
+
       emit(SignedInWithApple(user: userCredential.user));
-    } catch(e) {
+    } catch (e) {
       emit(SignedInWithAppleFailed(error: e));
     }
-
   }
 }

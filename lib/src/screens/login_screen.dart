@@ -14,8 +14,6 @@ import 'package:sign_button/sign_button.dart' as sign_button_mini;
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
-import '../blocs/auth/auth_cubit.dart';
-
 enum ButtonsAlignment { VERTICAL, HORIZONTAL }
 
 typedef Authenticated = void Function(
@@ -30,17 +28,19 @@ class LoginScreen extends StatelessWidget {
   final bool facebook;
   final bool google;
   final bool apple;
+  final bool phone;
 
-  const LoginScreen(
-      {Key? key,
-      this.decorationImage,
-      this.title,
-      required this.onAuthenticated,
-      this.alignment = ButtonsAlignment.HORIZONTAL,
-      this.facebook = false,
-      this.google = false,
-      this.apple = false})
-      : super(key: key);
+  const LoginScreen({
+    Key? key,
+    this.decorationImage,
+    this.title,
+    required this.onAuthenticated,
+    this.alignment = ButtonsAlignment.HORIZONTAL,
+    this.facebook = false,
+    this.google = false,
+    this.apple = false,
+    this.phone = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +81,7 @@ class Body extends StatefulWidget {
   final bool facebook;
   final bool google;
   final bool apple;
+  final bool phone;
 
   const Body(
       {Key? key,
@@ -90,6 +91,7 @@ class Body extends StatefulWidget {
       this.alignment = ButtonsAlignment.HORIZONTAL,
       this.facebook = false,
       this.google = false,
+      this.phone = false,
       this.apple = false})
       : super(key: key);
 
@@ -105,6 +107,7 @@ class _BodyState extends State<Body> {
         widget.onAuthenticated(state.user);
         EasyLoading.dismiss();
       } else if (state is SignInFailed) {
+        print(state.error);
         EasyLoading.dismiss();
         showTopSnackBar(
           context,
@@ -132,7 +135,7 @@ class _BodyState extends State<Body> {
           ),
           if (widget.title != null) Container(child: widget.title),
           VERTICAL_MARGIN_5,
-          PhoneInput(),
+          if (widget.phone) PhoneInput(),
           VERTICAL_MARGIN_7,
           if (widget.apple || widget.google || widget.facebook)
             const Center(
@@ -143,19 +146,19 @@ class _BodyState extends State<Body> {
               children: [
                 VERTICAL_MARGIN_7,
                 HorizontalSocialSignInButton(
-                  facebook: widget.facebook,
-                  google: widget.google,
-                  apple: widget.apple,
-                )
+                    facebook: widget.facebook,
+                    google: widget.google,
+                    apple: widget.apple,
+                    phone: widget.phone)
               ],
             ),
           VERTICAL_MARGIN_5,
           if (widget.alignment == ButtonsAlignment.VERTICAL)
             VerticalSocialSignInButton(
-              facebook: widget.facebook,
-              google: widget.google,
-              apple: widget.apple,
-            ),
+                facebook: widget.facebook,
+                google: widget.google,
+                apple: widget.apple,
+                phone: widget.phone),
         ],
       ),
     );
@@ -166,18 +169,22 @@ class VerticalSocialSignInButton extends StatelessWidget {
   final bool facebook;
   final bool google;
   final bool apple;
+  final bool phone;
 
   const VerticalSocialSignInButton(
       {Key? key,
       this.facebook = false,
       this.google = false,
+      this.phone = false,
       this.apple = false})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
+    return SizedBox(
+      width: MediaQuery.of(context).size.width,
+      child: Flex(
+        direction: Axis.vertical,
         children: [
           if (google)
             SignInButton(
@@ -186,7 +193,7 @@ class VerticalSocialSignInButton extends StatelessWidget {
                 BlocProvider.of<AuthCubit>(context).signInWithGoogle();
               },
               elevation: 0,
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10.0),
             ),
           if (google)
             const SizedBox(
@@ -195,11 +202,11 @@ class VerticalSocialSignInButton extends StatelessWidget {
           if (apple)
             SignInButton(
               Buttons.Apple,
-              onPressed: () {
+              onPressed: () async {
                 BlocProvider.of<AuthCubit>(context).signInWithApple();
               },
               elevation: 0,
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(16.0),
             ),
           if (apple)
             const SizedBox(
@@ -224,11 +231,13 @@ class HorizontalSocialSignInButton extends StatelessWidget {
   final bool facebook;
   final bool google;
   final bool apple;
+  final bool phone;
 
   const HorizontalSocialSignInButton(
       {Key? key,
       this.facebook = false,
       this.google = false,
+      this.phone = false,
       this.apple = false})
       : super(key: key);
 
