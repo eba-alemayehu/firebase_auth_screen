@@ -8,9 +8,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_signin_button/button_view.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:sign_button/sign_button.dart' as sign_button_mini;
+import 'package:sms_autofill/sms_autofill.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
@@ -160,6 +162,11 @@ class _BodyState extends State<Body> {
       ),
     );
   }
+
+  @override
+  void codeUpdated() {
+    // TODO: implement codeUpdated
+  }
 }
 
 class VerticalSocialSignInButton extends StatelessWidget {
@@ -271,10 +278,17 @@ class HorizontalSocialSignInButton extends StatelessWidget {
   }
 }
 
-class PhoneInput extends StatelessWidget {
+class PhoneInput extends StatefulWidget {
+  PhoneInput({Key? key}) : super(key: key);
   PhoneNumber? phoneNumber;
 
-  PhoneInput({Key? key}) : super(key: key);
+  @override
+  State<PhoneInput> createState() => _PhoneInputState();
+}
+
+class _PhoneInputState extends State<PhoneInput> with CodeAutoFill {
+  String? verificationId;
+  bool isValidated = false;
 
   @override
   Widget build(BuildContext context) {
@@ -300,15 +314,22 @@ class PhoneInput extends StatelessWidget {
                 ],
               ),
               child: InternationalPhoneNumberInput(
-                countries: ["ET", "US"],
-                onInputChanged: (PhoneNumber value) {
-                  phoneNumber = value;
-                },
-                inputDecoration: InputDecoration(
-                  fillColor: Theme.of(context).cardColor,
-                  border: InputBorder.none,
-                  filled: true,
-                ),
+                  countries: ["ET", "US"],
+                  onInputChanged: (PhoneNumber value) {
+                    widget.phoneNumber = value;
+                  },
+                  onInputValidated: (isValid) => setState(() {
+                        isValidated = isValid;
+                      }),
+                  inputDecoration: InputDecoration(
+                    fillColor: Theme.of(context).cardColor,
+                    border: InputBorder.none,
+                    filled: true,
+                  ),
+                  autoValidateMode: AutovalidateMode.disabled,
+                  spaceBetweenSelectorAndTextField: 0,
+
+                  selectorConfig: const SelectorConfig(leadingPadding: 0,trailingSpace: false),
               ),
             ),
           ),
@@ -318,18 +339,23 @@ class PhoneInput extends StatelessWidget {
             height: 56,
             borderRadius: BorderRadius.circular(32.0),
             padding: const EdgeInsets.all(4.0),
-            onPressed: () async {
-              if (phoneNumber != null) {
-                BlocProvider.of<AuthCubit>(context).sendPhoneVerificationCode(
-                    phoneNumber?.toString() ?? '', onCodeSent: (
-                  String verificationId,
-                  int? forceResendingToken,
-                ) {
-                  _showPhoneVerificationModal(
-                      context, verificationId, forceResendingToken);
-                });
-              }
-            },
+            onPressed: !isValidated
+                ? null
+                : () async {
+                    if (widget.phoneNumber != null) {
+                      BlocProvider.of<AuthCubit>(context)
+                          .sendPhoneVerificationCode(
+                              widget.phoneNumber?.phoneNumber?.toString() ?? '',
+                              onCodeSent: (
+                        String verificationId,
+                        int? forceResendingToken,
+                      ) {
+                        this.verificationId = verificationId;
+                        _showPhoneVerificationModal(
+                            context, verificationId, forceResendingToken);
+                      });
+                    }
+                  },
             child: BlocBuilder<AuthCubit, AuthState>(
               builder: (context, state) {
                 if (state is SendingPhoneConfirmation) {
@@ -356,16 +382,59 @@ class PhoneInput extends StatelessWidget {
 
   void _showPhoneVerificationModal(
       cxt, String verificationId, int? forceResendingToken) {
+    if (widget.phoneNumber == null) {
+      Fluttertoast.showToast(
+          msg: "Phone number is required",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      return;
+    }
     showMaterialModalBottomSheet(
       context: cxt,
       builder: (context) => BlocProvider(
         create: (context) => BlocProvider.of<AuthCubit>(cxt),
         child: VerificationCode(
-          phoneNumber: phoneNumber.toString(),
+          phoneNumber: widget.phoneNumber?.phoneNumber.toString() ?? '',
           verificationId: verificationId,
           forceResendingToken: forceResendingToken,
+          onCodeSubmit: (code) => {_verifyCode(verificationId, code)},
         ),
       ),
     );
+  }
+
+  void _verifyCode(verificationId, verificationCode) {
+    final authCubit = BlocProvider.of<AuthCubit>(context);
+    authCubit.signInPhoneNumber(verificationId, verificationCode);
+    authCubit.stream.listen((state) {
+      if (state is SigningInWithPhone) {
+        EasyLoading.show();
+      } else if (state is SignedInWithPhone) {
+        EasyLoading.showSuccess("Signed in");
+        EasyLoading.dismiss();
+      } else if (state is SignedInWithPhoneFailed) {
+        EasyLoading.dismiss();
+        Fluttertoast.showToast(
+            msg: "The sms verification code is invalid",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      }
+    });
+    PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: verificationId, smsCode: verificationCode);
+    FirebaseAuth.instance.signInWithCredential(credential);
+  }
+
+  @override
+  void codeUpdated() {
+    _verifyCode(verificationId, code);
   }
 }

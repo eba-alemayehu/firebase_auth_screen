@@ -1,6 +1,6 @@
 name: firebase_auth_screen
 description: Authentication screen with firebase.
-version: 0.0.17
+version: 0.0.23
 homepage:
 
 environment:
@@ -26,11 +26,12 @@ dependencies:
   fluttertoast: ^8.0.9
   form_builder_chips_input: ^0.0.3
   google_sign_in: ^5.2.4
-  intl_phone_number_input: ^0.7.0+2
+  intl_phone_number_input: ^0.7.2
   modal_bottom_sheet:
   sheet:
   sign_button: ^2.0.2
   sign_in_with_apple: ^3.3.0
+  sms_autofill: ^2.3.0
   top_snackbar_flutter: ^1.0.2
 
 dev_dependencies:

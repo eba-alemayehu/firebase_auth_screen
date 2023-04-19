@@ -12,11 +12,12 @@ class VerificationCode extends StatelessWidget {
   final String phoneNumber;
   final String verificationId;
   final int? forceResendingToken;
+  final void Function(String) onCodeSubmit;
 
   const VerificationCode({Key? key,
     required this.phoneNumber,
     required this.verificationId,
-    this.forceResendingToken})
+    this.forceResendingToken, required this.onCodeSubmit})
       : super(key: key);
 
   @override
@@ -87,36 +88,7 @@ class VerificationCode extends StatelessWidget {
                   onCodeChanged: (String code) {
                     //handle validation or checks here
                   },
-                  onSubmit: (verificationCode) {
-                    final authCubit = BlocProvider.of<AuthCubit>(context);
-                    authCubit.signInPhoneNumber(
-                        verificationId, verificationCode);
-                    authCubit.stream.listen((state) {
-                      if (state is SigningInWithPhone) {
-                        EasyLoading.show();
-                      } else if (state is SignedInWithPhone) {
-                        EasyLoading.showSuccess("Signed in");
-                        EasyLoading.dismiss();
-                      }
-                      else if(state is SignedInWithPhoneFailed){
-                        EasyLoading.dismiss();
-                        Fluttertoast.showToast(
-                            msg: "The sms verification code used to create the phone auth credential is invalid",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.CENTER,
-                            timeInSecForIosWeb: 1,
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                            fontSize: 16.0
-                        );
-                      }
-                    });
-                    PhoneAuthCredential credential = PhoneAuthProvider.credential(
-                        verificationId: verificationId,
-                        smsCode: verificationCode);
-                    FirebaseAuth.instance.signInWithCredential(credential);
-
-                  },
+                  onSubmit: onCodeSubmit,
                 ),
                 const SizedBox(
                   height: 24.0,

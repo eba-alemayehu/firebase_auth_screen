@@ -44,7 +44,10 @@ class Button extends StatelessWidget {
           gradient: LinearGradient(
             begin: const Alignment(-1.0, -1),
             end: const Alignment(1.0, 1),
-            colors: <Color>[
+            colors: (this.onPressed == null)?<Color>[
+              Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.3)
+            ] : <Color>[
               Theme.of(context).colorScheme.primary,
               Theme.of(context).colorScheme.secondary
             ],
