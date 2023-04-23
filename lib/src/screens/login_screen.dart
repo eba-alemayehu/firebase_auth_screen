@@ -12,7 +12,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:sign_button/sign_button.dart' as sign_button_mini;
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:sms_autofill/sms_autofill.dart';
+import 'package:social_login_buttons/social_login_buttons.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
@@ -32,6 +34,7 @@ class LoginScreen extends StatelessWidget {
   final bool facebook;
   final bool google;
   final bool apple;
+  final bool phone;
 
   const LoginScreen(
       {Key? key,
@@ -41,35 +44,23 @@ class LoginScreen extends StatelessWidget {
       this.alignment = ButtonsAlignment.HORIZONTAL,
       this.facebook = false,
       this.google = false,
-      this.apple = false})
+      this.apple = false,
+      this.phone = true})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => AuthCubit(),
-      child: Scaffold(
-        body: Body(
-          facebook: facebook,
-          google: google,
-          apple: apple,
-          decorationImage: this.decorationImage,
-          title: this.title,
-          onAuthenticated: this.onAuthenticated,
-          alignment: this.alignment,
-        ),
-        // bottomNavigationBar: (widget.decorationImage != null)?AspectRatio(
-        //   aspectRatio: 9 / 3,
-        //   child: Container(
-        //     decoration: BoxDecoration(
-        //         image: DecorationImage(
-        //       fit: BoxFit.fitWidth,
-        //       alignment: FractionalOffset.bottomCenter,
-        //       image:  widget.decorationImage//AssetImage("assets/images/background_decoration.png"),
-        //     )),
-        //   ),
-        //   // Image.asset("assets/images/background_decoration.png"),
-        // ): Container(),
+      child: Body(
+        facebook: facebook,
+        google: google,
+        apple: apple,
+        phone: phone,
+        decorationImage: decorationImage,
+        title: title,
+        onAuthenticated: onAuthenticated,
+        alignment: alignment,
       ),
     );
   }
@@ -83,6 +74,7 @@ class Body extends StatefulWidget {
   final bool facebook;
   final bool google;
   final bool apple;
+  final bool phone;
 
   const Body(
       {Key? key,
@@ -92,7 +84,8 @@ class Body extends StatefulWidget {
       this.alignment = ButtonsAlignment.HORIZONTAL,
       this.facebook = false,
       this.google = false,
-      this.apple = false})
+      this.apple = false,
+      this.phone = true})
       : super(key: key);
 
   @override
@@ -133,10 +126,11 @@ class _BodyState extends State<Body> {
             height: MediaQuery.of(context).size.height * 0.15,
           ),
           if (widget.title != null) Container(child: widget.title),
-          VERTICAL_MARGIN_5,
-          PhoneInput(),
-          VERTICAL_MARGIN_7,
-          if (widget.apple || widget.google || widget.facebook)
+          if (widget.phone) VERTICAL_MARGIN_5,
+          if (widget.phone) PhoneInput(),
+          if (widget.phone) VERTICAL_MARGIN_7,
+          if ((widget.apple || widget.google || widget.facebook) &&
+              widget.phone)
             const Center(
               child: Text("Sign in with"),
             ),
@@ -166,6 +160,7 @@ class _BodyState extends State<Body> {
   @override
   void codeUpdated() {
     // TODO: implement codeUpdated
+    print("Code: updated");
   }
 }
 
@@ -187,39 +182,41 @@ class VerticalSocialSignInButton extends StatelessWidget {
       child: Column(
         children: [
           if (google)
-            SignInButton(
-              Buttons.Google,
+            SocialLoginButton(
+              buttonType: SocialLoginButtonType.google,
               onPressed: () {
                 BlocProvider.of<AuthCubit>(context).signInWithGoogle();
               },
-              elevation: 0,
-              padding: EdgeInsets.all(8.0),
             ),
+            // SignInButton(
+            //   Buttons.Google,
+            //   onPressed: () {
+            //     BlocProvider.of<AuthCubit>(context).signInWithGoogle();
+            //   },
+            //   elevation: 0,
+            //   padding: EdgeInsets.all(8.0),
+            // ),
           if (google)
             const SizedBox(
               height: 16.0,
             ),
           if (apple)
-            SignInButton(
-              Buttons.Apple,
+            SocialLoginButton(
+              buttonType: SocialLoginButtonType.apple,
               onPressed: () {
                 BlocProvider.of<AuthCubit>(context).signInWithApple();
               },
-              elevation: 0,
-              padding: EdgeInsets.all(8.0),
             ),
           if (apple)
             const SizedBox(
               height: 16.0,
             ),
           if (facebook)
-            SignInButton(
-              Buttons.FacebookNew,
+            SocialLoginButton(
+              buttonType: SocialLoginButtonType.facebook,
               onPressed: () {
                 BlocProvider.of<AuthCubit>(context).signInWithFacebook();
               },
-              elevation: 0,
-              padding: EdgeInsets.all(12.0),
             ),
         ],
       ),
@@ -314,22 +311,22 @@ class _PhoneInputState extends State<PhoneInput> with CodeAutoFill {
                 ],
               ),
               child: InternationalPhoneNumberInput(
-                  countries: ["ET", "US"],
-                  onInputChanged: (PhoneNumber value) {
-                    widget.phoneNumber = value;
-                  },
-                  onInputValidated: (isValid) => setState(() {
-                        isValidated = isValid;
-                      }),
-                  inputDecoration: InputDecoration(
-                    fillColor: Theme.of(context).cardColor,
-                    border: InputBorder.none,
-                    filled: true,
-                  ),
-                  autoValidateMode: AutovalidateMode.disabled,
-                  spaceBetweenSelectorAndTextField: 0,
-
-                  selectorConfig: const SelectorConfig(leadingPadding: 0,trailingSpace: false),
+                countries: ["ET", "US"],
+                onInputChanged: (PhoneNumber value) {
+                  widget.phoneNumber = value;
+                },
+                onInputValidated: (isValid) => setState(() {
+                  isValidated = isValid;
+                }),
+                inputDecoration: InputDecoration(
+                  fillColor: Theme.of(context).cardColor,
+                  border: InputBorder.none,
+                  filled: true,
+                ),
+                autoValidateMode: AutovalidateMode.disabled,
+                spaceBetweenSelectorAndTextField: 0,
+                selectorConfig: const SelectorConfig(
+                    leadingPadding: 0, trailingSpace: false),
               ),
             ),
           ),
