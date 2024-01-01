@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_screen/src/blocs/auth/auth_cubit.dart';
 import 'package:firebase_auth_screen/src/constants/size.dart';
+import 'package:firebase_auth_screen/src/screens/Login/login_screen.dart';
 import 'package:firebase_auth_screen/src/screens/verfication_code.dart';
 import 'package:firebase_auth_screen/src/widgets/button.dart';
 import 'package:flutter/material.dart';
@@ -35,15 +36,19 @@ class LoginScreen extends StatelessWidget {
   final bool google;
   final bool apple;
   final bool phone;
+  final bool password;
+  final double marginTopRatio;
 
   const LoginScreen(
       {Key? key,
       this.decorationImage,
       this.title,
       required this.onAuthenticated,
+      this.marginTopRatio = 0.15,
       this.alignment = ButtonsAlignment.HORIZONTAL,
       this.facebook = false,
       this.google = false,
+      this.password = false,
       this.apple = false,
       this.phone = true})
       : super(key: key);
@@ -53,12 +58,14 @@ class LoginScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => AuthCubit(),
       child: Body(
+        marginTopRatio: this.marginTopRatio,
         facebook: facebook,
         google: google,
         apple: apple,
         phone: phone,
         decorationImage: decorationImage,
         title: title,
+        password: password,
         onAuthenticated: onAuthenticated,
         alignment: alignment,
       ),
@@ -75,13 +82,17 @@ class Body extends StatefulWidget {
   final bool google;
   final bool apple;
   final bool phone;
+  final bool password;
+  final double marginTopRatio;
 
   const Body(
       {Key? key,
       this.decorationImage,
       this.title,
       required this.onAuthenticated,
+      this.marginTopRatio = 0.15,
       this.alignment = ButtonsAlignment.HORIZONTAL,
+      this.password = false,
       this.facebook = false,
       this.google = false,
       this.apple = false,
@@ -121,9 +132,10 @@ class _BodyState extends State<Body> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.15,
+            height: MediaQuery.of(context).size.height * widget.marginTopRatio,
           ),
           if (widget.title != null) Container(child: widget.title),
           if (widget.phone) VERTICAL_MARGIN_5,
@@ -148,6 +160,7 @@ class _BodyState extends State<Body> {
           VERTICAL_MARGIN_5,
           if (widget.alignment == ButtonsAlignment.VERTICAL)
             VerticalSocialSignInButton(
+              password: widget.password,
               facebook: widget.facebook,
               google: widget.google,
               apple: widget.apple,
@@ -168,9 +181,11 @@ class VerticalSocialSignInButton extends StatelessWidget {
   final bool facebook;
   final bool google;
   final bool apple;
+  final bool password;
 
   const VerticalSocialSignInButton(
       {Key? key,
+      this.password = false,
       this.facebook = false,
       this.google = false,
       this.apple = false})
@@ -188,14 +203,14 @@ class VerticalSocialSignInButton extends StatelessWidget {
                 BlocProvider.of<AuthCubit>(context).signInWithGoogle();
               },
             ),
-            // SignInButton(
-            //   Buttons.Google,
-            //   onPressed: () {
-            //     BlocProvider.of<AuthCubit>(context).signInWithGoogle();
-            //   },
-            //   elevation: 0,
-            //   padding: EdgeInsets.all(8.0),
-            // ),
+          // SignInButton(
+          //   Buttons.Google,
+          //   onPressed: () {
+          //     BlocProvider.of<AuthCubit>(context).signInWithGoogle();
+          //   },
+          //   elevation: 0,
+          //   padding: EdgeInsets.all(8.0),
+          // ),
           if (google)
             const SizedBox(
               height: 16.0,
@@ -216,6 +231,27 @@ class VerticalSocialSignInButton extends StatelessWidget {
               buttonType: SocialLoginButtonType.facebook,
               onPressed: () {
                 BlocProvider.of<AuthCubit>(context).signInWithFacebook();
+              },
+            ),
+          if (password)
+            SocialLoginButton(
+              backgroundColor: Colors.white,
+              textColor: Theme.of(context).textTheme.titleLarge!.color,
+              height: 50,
+              text: 'Sign in with Email',
+              borderRadius: 5,
+              fontSize: 16,
+              buttonType: SocialLoginButtonType.generalLogin,
+              imageURL: "assets/icons/email-icon.png",
+              onPressed: () async {
+                final signIn = await showMaterialModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      return const SignInScreen();
+                    });
+                if(signIn) {
+                  Navigator.of(context).pop(true);
+                }
               },
             ),
         ],
@@ -341,15 +377,28 @@ class _PhoneInputState extends State<PhoneInput> with CodeAutoFill {
                 : () async {
                     if (widget.phoneNumber != null) {
                       BlocProvider.of<AuthCubit>(context)
+                          .stream
+                          .listen((state) => {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text(state.toString()),
+                                ))
+                              });
+                      final String phone =
+                          widget.phoneNumber?.phoneNumber ?? '';
+                      BlocProvider.of<AuthCubit>(context)
                           .sendPhoneVerificationCode(
                               widget.phoneNumber?.phoneNumber?.toString() ?? '',
                               onCodeSent: (
                         String verificationId,
                         int? forceResendingToken,
                       ) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("Verification code is sent"),
+                        ));
                         this.verificationId = verificationId;
-                        _showPhoneVerificationModal(
-                            context, verificationId, forceResendingToken);
+                        _showPhoneVerificationModal(context, verificationId,
+                            forceResendingToken, phone);
                       });
                     }
                   },
@@ -378,8 +427,8 @@ class _PhoneInputState extends State<PhoneInput> with CodeAutoFill {
   }
 
   void _showPhoneVerificationModal(
-      cxt, String verificationId, int? forceResendingToken) {
-    if (widget.phoneNumber == null) {
+      cxt, String verificationId, int? forceResendingToken, String phone) {
+    if (phone == null) {
       Fluttertoast.showToast(
           msg: "Phone number is required",
           toastLength: Toast.LENGTH_SHORT,
@@ -395,7 +444,7 @@ class _PhoneInputState extends State<PhoneInput> with CodeAutoFill {
       builder: (context) => BlocProvider(
         create: (context) => BlocProvider.of<AuthCubit>(cxt),
         child: VerificationCode(
-          phoneNumber: widget.phoneNumber?.phoneNumber.toString() ?? '',
+          phoneNumber: phone,
           verificationId: verificationId,
           forceResendingToken: forceResendingToken,
           onCodeSubmit: (code) => {_verifyCode(verificationId, code)},
@@ -413,6 +462,7 @@ class _PhoneInputState extends State<PhoneInput> with CodeAutoFill {
       } else if (state is SignedInWithPhone) {
         EasyLoading.showSuccess("Signed in");
         EasyLoading.dismiss();
+        Navigator.of(context).pop();
       } else if (state is SignedInWithPhoneFailed) {
         EasyLoading.dismiss();
         Fluttertoast.showToast(

@@ -5,9 +5,10 @@ import 'package:bloc/bloc.dart';
 import 'package:crypto/crypto.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+// import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 part 'auth_state.dart';
 
@@ -26,24 +27,28 @@ class AuthCubit extends Cubit<AuthState> {
       phoneNumber: phoneNumber,
       forceResendingToken: resendToken,
       verificationCompleted: (PhoneAuthCredential credential) async {
+        Fluttertoast.showToast(msg: "verfication coplited");
         UserCredential userCredintal =
         await FirebaseAuth.instance.signInWithCredential(credential);
         emit(SignedInWithPhone(user: userCredintal.user));
       },
       verificationFailed: (FirebaseAuthException e) {
-        emit(VerificationFailed(error: e));
+        Fluttertoast.showToast(msg: "verfication faild");
+        emit(VerificationFailed(error: e.message));
       },
       codeSent: (String verificationId, int? resendToken) {
+        Fluttertoast.showToast(msg: "Code sent");
         emit(ConfirmationCodeSent());
         onCodeSent(verificationId, resendToken);
       },
       timeout: const Duration(minutes: 2),
       codeAutoRetrievalTimeout: (String verificationId) {
+        Fluttertoast.showToast(msg: "verfication codeAutoRetrievalTimeout");
         emit(CodeAutoRetrievalTimeout(verificationId: verificationId));
       },
     );
     FirebaseAuth.instance.authStateChanges().listen((user) {
-      if (user?.uid != null) {
+      if (user?.uid != null && user?.isAnonymous == false) {
         emit(SignedIn(user));
       }
     });
@@ -78,17 +83,17 @@ class AuthCubit extends Cubit<AuthState> {
     emit(SigningInWithFacebook());
     // Trigger the sign-in flow
     try{
-      final LoginResult loginResult =
-      await FacebookAuth.instance.login(permissions: ['public_profile']);
-
-      // Create a credential from the access token
-      final OAuthCredential facebookAuthCredential =
-      FacebookAuthProvider.credential(loginResult.accessToken?.token ?? '');
-
-      // Once signed in, return the UserCredential
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithCredential(facebookAuthCredential);
-      emit(SignedInWithFacebook(user: userCredential.user));
+      // final LoginResult loginResult =
+      // await FacebookAuth.instance.login(permissions: ['public_profile']);
+      //
+      // // Create a credential from the access token
+      // final OAuthCredential facebookAuthCredential =
+      // FacebookAuthProvider.credential(loginResult.accessToken?.token ?? '');
+      //
+      // // Once signed in, return the UserCredential
+      // UserCredential userCredential = await FirebaseAuth.instance
+      //     .signInWithCredential(facebookAuthCredential);
+      // emit(SignedInWithFacebook(user: userCredential.user));
     }catch (e) {
       emit(SignedInWithFacebookFailed(error: e));
     }
